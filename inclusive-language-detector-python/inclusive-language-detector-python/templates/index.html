@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector de Lenguaje Inclusivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #3a3a3a;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --accent: #cc8866;
+            --accent-hover: #d99977;
+            --border: #4a4a4a;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* Pantalla de bienvenida */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .logo-container {
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(204, 136, 102, 0.3);
+        }
+
+        .welcome-title {
+            font-size: 18px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .name-input-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px solid var(--border);
+            transition: border-color 0.3s ease;
+        }
+
+        .name-input-container:focus-within {
+            border-color: var(--accent);
+        }
+
+        .name-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .name-avatar {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .name-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            padding: 10px 0;
+        }
+
+        .name-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .submit-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Chat interface */
+        .chat-screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .chat-screen.active {
+            display: block;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .greeting {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .greeting-icon {
+            margin-right: 8px;
+        }
+
+        /* Mode selector */
+        .mode-selector {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 6px;
+            display: inline-flex;
+            gap: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mode-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .mode-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        /* Chat area */
+        .chat-area {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-subtext {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Message bubbles */
+        .message {
+            margin-bottom: 20px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .message-user {
+            background: var(--bg-card);
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-left: auto;
+            max-width: 80%;
+        }
+
+        .message-assistant {
+            background: transparent;
+            padding: 16px 0;
+        }
+
+        .message-content {
+            line-height: 1.6;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 12px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .result-score {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .issues-list {
+            margin-top: 16px;
+        }
+
+        .issue-item {
+            background: var(--bg-secondary);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--danger);
+        }
+
+        .issue-text {
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .issue-suggestion {
+            color: var(--success);
+            font-size: 14px;
+        }
+
+        /* Input area */
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            transition: border-color 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+        }
+
+        .text-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            min-height: 24px;
+            max-height: 200px;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .text-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: scale(1.1);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: flex;
+            gap: 8px;
+            padding: 20px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-card);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .greeting {
+                font-size: 22px;
+            }
+
+            .message-user {
+                max-width: 90%;
+            }
+
+            .chat-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="logo-container">
+                <div class="logo">✨</div>
+            </div>
+            
+            <h1 class="welcome-title">Antes de empezar, ¿cómo quieres que te llame?</h1>
+            
+            <div class="name-input-container">
+                <div class="name-input-wrapper">
+                    <div class="name-avatar" id="nameAvatar">E</div>
+                    <input 
+                        type="text" 
+                        class="name-input" 
+                        id="nameInput" 
+                        placeholder="Enrique"
+                        maxlength="20"
+                    >
+                    <button class="submit-btn" id="submitName" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div class="chat-screen" id="chatScreen">
+            <div class="chat-header">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">E</div>
+                    <h1 class="greeting">
+                        <span class="greeting-icon">✨</span>
+                        <span id="greetingName">Hola, Enrique</span>
+                    </h1>
+                </div>
+                
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="basic" id="modeBasic">
+                        ⚡ Modo Básico
+                    </button>
+                    <button class="mode-btn" data-mode="pro" id="modePro">
+                        🤖 Modo IA
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <div class="messages-container" id="messagesContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <div class="empty-state-text">¿Cómo puedo ayudarle hoy?</div>
+                        <div class="empty-state-subtext">Escribe o pega el texto que deseas analizar</div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea 
+                            class="text-input" 
+                            id="textInput" 
+                            placeholder="Escribe tu mensaje aquí..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-btn" id="sendBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let userName = '';
+        let currentMode = 'basic';
+
+        // Elementos DOM
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatScreen = document.getElementById('chatScreen');
+        const nameInput = document.getElementById('nameInput');
+        const nameAvatar = document.getElementById('nameAvatar');
+        const submitName = document.getElementById('submitName');
+        const userAvatar = document.getElementById('userAvatar');
+        const greetingName = document.getElementById('greetingName');
+        const textInput = document.getElementById('textInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const modeBasic = document.getElementById('modeBasic');
+        const modePro = document.getElementById('modePro');
+
+        // Welcome screen
+        nameInput.addEventListener('input', (e) => {
+            const value = e.target.value.trim();
+            submitName.disabled = value.length === 0;
+            
+            if (value.length > 0) {
+                nameAvatar.textContent = value[0].toUpperCase();
+            } else {
+                nameAvatar.textContent = 'E';
+            }
+        });
+
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !submitName.disabled) {
+                startChat();
+            }
+        });
+
+        submitName.addEventListener('click', startChat);
+
+        function startChat() {
+            userName = nameInput.value.trim();
+            if (!userName) return;
+
+            userAvatar.textContent = userName[0].toUpperCase();
+            greetingName.textContent = `Hola, ${userName}`;
+
+            welcomeScreen.style.display = 'none';
+            chatScreen.classList.add('active');
+            textInput.focus();
+        }
+
+        // Mode selector
+        modeBasic.addEventListener('click', () => setMode('basic'));
+        modePro.addEventListener('click', () => setMode('pro'));
+
+        function setMode(mode) {
+            currentMode = mode;
+            
+            if (mode === 'basic') {
+                modeBasic.classList.add('active');
+                modePro.classList.remove('active');
+            } else {
+                modePro.classList.add('active');
+                modeBasic.classList.remove('active');
+            }
+        }
+
+        // Text input
+        textInput.addEventListener('input', (e) => {
+            sendBtn.disabled = e.target.value.trim().length === 0;
+            
+            // Auto-resize textarea
+            e.target.style.height = 'auto';
+            e.target.style.height = e.target.scrollHeight + 'px';
+        });
+
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sendBtn.disabled) {
+                    analyzeText();
+                }
+            }
+        });
+
+        sendBtn.addEventListener('click', analyzeText);
+
+        async function analyzeText() {
+            const text = textInput.value.trim();
+            if (!text) return;
+
+            // Clear empty state
+            const emptyState = messagesContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Add user message
+            addMessage(text, 'user');
+            textInput.value = '';
+            textInput.style.height = 'auto';
+            sendBtn.disabled = true;
+
+            // Show loading
+            const loadingId = addLoading();
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        mode: currentMode
+                    })
+                });
+
+                const data = await response.json();
+                removeLoading(loadingId);
+
+                if (data.error) {
+                    addMessage(`❌ ${data.error}`, 'assistant');
+                } else {
+                    displayResults(data);
+                }
+            } catch (error) {
+                removeLoading(loadingId);
+                addMessage('❌ Error al conectar con el servidor. Intenta de nuevo.', 'assistant');
+            }
+        }
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            if (type === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="message-user">
+                        <div class="message-content">${escapeHtml(content)}</div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-assistant">
+                        <div class="message-content">${content}</div>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addLoading() {
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'message';
+            loadingDiv.innerHTML = `
+                <div class="message-assistant">
+                    <div class="loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return loadingId;
+        }
+
+        function removeLoading(loadingId) {
+            const loading = document.getElementById(loadingId);
+            if (loading) loading.remove();
+        }
+
+        function displayResults(data) {
+            const stats = data.stats;
+            const scoreColor = stats.inclusive_score >= 80 ? '#22c55e' : 
+                              stats.inclusive_score >= 60 ? '#f59e0b' : '#ef4444';
+
+            let resultHTML = `
+                <div class="message-assistant">
+                    <div class="message-content">${escapeHtml(data.overall_feedback)}</div>
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div>
+                                <div class="result-score" style="color: ${scoreColor}">${stats.inclusive_score}%</div>
+                                <div class="result-label">Nivel de Inclusión</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--danger)">${stats.issues_found}</div>
+                                <div class="result-label">Problemas</div>
+                            </div>
+                        </div>
+            `;
+
+            if (data.issues && data.issues.length > 0) {
+                resultHTML += '<div class="issues-list">';
+                data.issues.slice(0, 5).forEach(issue => {
+                    resultHTML += `
+                        <div class="issue-item">
+                            <div class="issue-text">❌ "${escapeHtml(issue.original_text)}"</div>
+                            <div class="issue-suggestion">✅ ${escapeHtml(issue.suggestion)}</div>
+                        </div>
+                    `;
+                });
+                resultHTML += '</div>';
+
+                if (data.issues.length > 5) {
+                    resultHTML += `<div style="text-align: center; margin-top: 12px; color: var(--text-secondary); font-size: 14px;">+${data.issues.length - 5} más detectados</div>`;
+                }
+            }
+
+            resultHTML += '</div></div>';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerHTML = resultHTML;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
