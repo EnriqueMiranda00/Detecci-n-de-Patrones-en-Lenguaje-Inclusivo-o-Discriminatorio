@@ -1,0 +1,18 @@
+
+{% extends 'base.html' %}
+{% block title %}Usuario - ACREDICOM{% endblock %}
+{% block content %}
+<h3 class="text-success">{% if object %}Editar{% else %}Nuevo{% endif %} usuario</h3>
+<form method="post" class="card p-3 shadow-sm">
+  {% csrf_token %}
+  {{ form.as_p }}
+  {% if form.fields.nombres_completos %}
+    <div class="mb-3">
+      <label for="id_nombres_completos" class="form-label">Nombres completos</label>
+      <input type="text" name="nombres_completos" value="{{ form.initial.nombres_completos }}" class="form-control" id="id_nombres_completos" required>
+    </div>
+  {% endif %}
+  <button class="btn btn-success">Guardar</button>
+  <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

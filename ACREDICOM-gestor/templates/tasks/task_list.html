@@ -1,0 +1,71 @@
+
+{% extends 'base.html' %}
+{% block title %}Tareas - ACREDICOM{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="text-success">Tareas</h3>
+  {% if user.is_superuser or user.groups.filter(name='ADMINISTRADOR').exists %}
+    <a href="{% url 'tasks:create' %}" class="btn btn-success">Nueva tarea</a>
+  {% endif %}
+</div>
+
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Fecha creación</th>
+      <th>Título</th>
+      <th>Asignado a</th>
+      <th>Vence</th>
+      <th>Prioridad</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in tareas %}
+    <tr data-task-id="{{ t.id }}">
+      <td>{{ t.fecha_creacion|date:"Y-m-d H:i" }}</td>
+      <td><a href="{% url 'tasks:detail' t.id %}">{{ t.titulo }}</a></td>
+      <td>{{ t.usuario_asignado.profile.nombres_completos|default:t.usuario_asignado.username }}</td>
+      <td>{{ t.fecha_vencimiento|date:"Y-m-d" }}</td>
+      <td>
+        <span class="badge 
+          {% if t.prioridad == 'ALTA' %}text-bg-danger
+          {% elif t.prioridad == 'MEDIA' %}text-bg-warning
+          {% else %}text-bg-success{% endif %}">
+          {{ t.get_prioridad_display }}
+        </span>
+      </td>
+      <td>
+        {% with can_change=(user.is_superuser or user.groups.filter(name='ADMINISTRADOR').exists or user == t.usuario_asignado) %}
+        {% if can_change %}
+          <select class="form-select form-select-sm js-status">
+            {% for val, label in t.ESTADO_CHOICES %}
+              <option value="{{ val }}" {% if t.estado == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          {{ t.get_estado_display }}
+        {% endif %}
+        {% endwith %}
+      </td>
+      <td>
+        {% if user.is_superuser or user.groups.filter(name='ADMINISTRADOR').exists %}
+          <a href="{% url 'tasks:edit' t.id %}" class="btn btn-sm btn-outline-secondary">Editar</a>
+          <a href="{% url 'tasks:delete' t.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar tarea?')">Eliminar</a>
+        {% else %}
+          <a href="{% url 'tasks:detail' t.id %}" class="btn btn-sm btn-outline-success">Ver</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+      <tr><td colspan="7" class="text-center text-muted">No hay tareas.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/tasks.js' %}"></script>
+{% endblock %}

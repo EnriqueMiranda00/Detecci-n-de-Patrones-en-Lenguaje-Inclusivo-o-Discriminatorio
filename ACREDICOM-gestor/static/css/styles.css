@@ -1,0 +1,13 @@
+
+/* ACREDICOM Green Theme */
+:root{
+  --acredicom-green:#249a63; /* Bootstrap success */
+}
+
+.navbar.bg-success{ background-color: var(--acredicom-green) !important; }
+.btn-success{ background-color: var(--acredicom-green); border-color: var(--acredicom-green); }
+.btn-success:hover{ filter: brightness(0.95); }
+.text-success{ color: var(--acredicom-green) !important; }
+.bg-success-subtle{ background-color: rgba(25,135,84,.1) !important; }
+
+body{ padding-bottom:40px; }

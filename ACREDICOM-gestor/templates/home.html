@@ -1,0 +1,10 @@
+
+{% extends 'base.html' %}
+{% block title %}Inicio - ACREDICOM{% endblock %}
+{% block content %}
+<div class="p-5 bg-success-subtle border rounded-3">
+  <h1 class="display-6 text-success">Lista de actividades por realizar</h1>
+  <p class="lead">Sistema ACREDICOM con roles (Administrador/Usuario), asignación de tareas y seguimiento de estado.</p>
+  <a href="{% url 'tasks:list' %}" class="btn btn-success">Ir a Tareas</a>
+</div>
+{% endblock %}
